@@ -19,10 +19,10 @@ func main()  {
 
   flag.Parse()
 
-  fmt.Printf("Timer set to %d \n", timer)
-  go settimer(timer)
+  timerup := make(chan bool, 1)
 
-
+  fmt.Printf("Timer set to %d \n", *timer)
+  go settimer(timer, timerup)
 
   bufio.NewReader(os.Stdin)
 
@@ -45,6 +45,11 @@ func main()  {
   csreader := bufio.NewReader(os.Stdin)
 
   for _,row := range records{
+    //istimerup := <- timerup
+    //if istimerup {
+    //  os.Exit(0)
+    //}
+
     fmt.Println( "How much is", row[0])
 
     value, err := csreader.ReadString('\n')
@@ -59,7 +64,14 @@ func main()  {
 }
 
 
-func settimer(timer *int){
-  time.Sleep(time.Second)
-  fmt.Println("You Have", *timer - 1, "left")
+func settimer(timer *int, timeup chan bool){
+  ref := *timer
+
+  for i := ref; i > 0; i-- {
+      time.Sleep(time.Second)
+  }
+
+  fmt.Println("Time up")
+
+  timeup <- true
 }
