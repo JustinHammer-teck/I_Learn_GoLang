@@ -14,7 +14,7 @@ func main()  {
 
   var newfilename string
   flag.StringVar(&newfilename, "rn", "", "Provide a new name")
-  timer := flag.Int("timer", 30, "Set your time")
+  timer := flag.Int("timer", 5, "Set your time")
   saveAnswer := flag.Bool("sA", false, "Save Your answer to CSV")
 
   flag.Parse()
@@ -41,25 +41,28 @@ func main()  {
 
   filereader := csv.NewReader(file)
   records,_ := filereader.ReadAll()
-
   csreader := bufio.NewReader(os.Stdin)
 
-  for _,row := range records{
-    //istimerup := <- timerup
-    //if istimerup {
-    //  os.Exit(0)
-    //}
+  for {
 
-    fmt.Println( "How much is", row[0])
+    select {
+    case <- timerup:
+      os.Exit(0)
+    default:
+      for _,row := range records{
+        fmt.Println( "How much is", row[0])
 
-    value, err := csreader.ReadString('\n')
-    if err != nil{
-      fmt.Println(err)
+        value, err := csreader.ReadString('\n')
+        if err != nil{
+          fmt.Println(err)
+        }
+
+        value = strings.TrimSpace(value)
+
+        fmt.Println(value == row[1])
+      }
     }
 
-    value = strings.TrimSpace(value)
-
-    fmt.Println(value == row[1])
   }
 }
 
@@ -68,10 +71,11 @@ func settimer(timer *int, timeup chan bool){
   ref := *timer
 
   for i := ref; i > 0; i-- {
-      time.Sleep(time.Second)
+    time.Sleep(time.Second)
+
+    fmt.Println(i)
   }
 
-  fmt.Println("Time up")
-
   timeup <- true
+  close(timeup)
 }
